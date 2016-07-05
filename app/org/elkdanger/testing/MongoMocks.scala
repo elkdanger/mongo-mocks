@@ -1,4 +1,4 @@
-package org.elkdanger
+package org.elkdanger.testing
 
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.{ eq => eqTo, _ }
