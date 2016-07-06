@@ -1,18 +1,17 @@
 package org.elkdanger.testing
 
-import org.mockito.Matchers._
+import org.mockito.Matchers.{eq => eqTo, _}
 import org.mockito.Mockito._
 import org.mockito.invocation.InvocationOnMock
 import org.mockito.stubbing.Answer
 import org.scalatest.mock.MockitoSugar
 import play.api.libs.json.JsObject
 import reactivemongo.api.Cursor
-import reactivemongo.play.json.collection.{JSONQueryBuilder, JSONCollection}
+import reactivemongo.play.json.collection.{JSONCollection, JSONQueryBuilder}
 
 import scala.collection.generic.CanBuildFrom
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.Manifest
-import org.mockito.Matchers.{ eq => eqTo, _ }
 
 
 trait MongoMockFinds extends MockitoSugar {
