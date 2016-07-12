@@ -11,34 +11,37 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait MongoMockInserts extends MockitoSugar {
 
-  def setupInsertOn[T](collection: JSONCollection, obj: T, fails: Boolean = false) = {
-    val m = mockWriteResult(fails)
-    when(collection.insert(eqTo(obj), any())(any(), any()))
-      .thenReturn(Future.successful(m))
+  implicit class InsertMethods(collection: JSONCollection) {
+
+    def setupInsert[T](obj: T, fails: Boolean = false) = {
+      when(collection.insert(eqTo(obj), any())(any(), any()))
+        .thenReturn(Future.successful(mockWriteResult(fails)))
+    }
+
+    def setupAnyInsert(fails: Boolean = false) = {
+      when(collection.insert(any(), any())(any(), any()))
+        .thenReturn(Future.successful(mockWriteResult(fails)))
+    }
+
+    def verifyAnyInsert = {
+      verify(collection).insert(any, any())(any(), any())
+    }
+
+    def verifyInsertWith[T](obj: T) = {
+      verify(collection).insert(eqTo(obj), any())(any(), any())
+    }
+
+    def verifyInsertWith[T](captor: ArgumentCaptor[T]) = {
+      verify(collection).insert(captor.capture(), any[WriteConcern])(any(), any[ExecutionContext])
+    }
+
+    private def mockWriteResult(fails: Boolean = false) = {
+      val m = mock[WriteResult]
+      when(m.ok).thenReturn(!fails)
+      m
+    }
   }
 
-  def setupAnyInsertOn(collection: JSONCollection, fails: Boolean = false) = {
-    val m = mockWriteResult(fails)
-    when(collection.insert(any(), any())(any(), any()))
-      .thenReturn(Future.successful(m))
-  }
 
-  def verifyAnyInsertOn(collection: JSONCollection) = {
-    verify(collection).insert(any, any())(any(), any())
-  }
-
-  def verifyInsertWith[T](collection: JSONCollection, obj: T) = {
-    verify(collection).insert(eqTo(obj), any())(any(), any())
-  }
-
-  def verifyInsertWith[T](collection: JSONCollection, captor: ArgumentCaptor[T]) = {
-    verify(collection).insert(captor.capture(), any[WriteConcern])(any(), any[ExecutionContext])
-  }
-
-  private def mockWriteResult(fails: Boolean = false) = {
-    val m = mock[WriteResult]
-    when(m.ok).thenReturn(!fails)
-    m
-  }
 
 }
