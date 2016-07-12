@@ -14,13 +14,15 @@ trait MongoMockInserts extends MockitoSugar {
   implicit class InsertMethods(collection: JSONCollection) {
 
     def setupInsert[T](obj: T, fails: Boolean = false) = {
+      val m = mockWriteResult(fails)
       when(collection.insert(eqTo(obj), any())(any(), any()))
-        .thenReturn(Future.successful(mockWriteResult(fails)))
+        .thenReturn(Future.successful(m))
     }
 
     def setupAnyInsert(fails: Boolean = false) = {
+      val m = mockWriteResult(fails)
       when(collection.insert(any(), any())(any(), any()))
-        .thenReturn(Future.successful(mockWriteResult(fails)))
+        .thenReturn(Future.successful(m))
     }
 
     def verifyAnyInsert = {

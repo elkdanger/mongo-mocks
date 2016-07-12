@@ -63,5 +63,26 @@ trait MongoMockFinds extends MockitoSugar {
       ) thenReturn Future.successful(returns)
 
     }
+
+    def setupFind[T](filter: Any, returns: Traversable[T])(implicit manifest: Manifest[T]) = {
+
+      val queryBuilder = mock[JSONQueryBuilder]
+      val cursor = mock[Cursor[T]]
+
+      when(
+        collection.find(eqTo(filter))(any())
+      ) thenReturn queryBuilder
+
+      when(
+        queryBuilder.cursor[T](any(), any())(any(), any(), any())
+      ) thenAnswer new Answer[Cursor[T]] {
+        def answer(i: InvocationOnMock) = cursor
+      }
+
+      when(
+        cursor.collect[Traversable](anyInt, anyBoolean)(any[CanBuildFrom[Traversable[_], T, Traversable[T]]], any[ExecutionContext])
+      ) thenReturn Future.successful(returns)
+
+    }
   }
 }
