@@ -18,31 +18,20 @@ trait MongoMockFinds extends MockitoSugar {
   implicit class FindSetups(collection: JSONCollection) {
 
     def setupFind[T](returns: Traversable[T])(implicit manifest: Manifest[T]) = {
-      val queryBuilder = mock[JSONQueryBuilder]
-      val cursor = mock[Cursor[T]]
+      setupCursorWithCollect(returns)
+    }
 
-      when(
-        collection.find(any[JsObject])(any())
-      ) thenReturn queryBuilder
-
-      when(
-        queryBuilder.cursor[T](any(), any())(any(), any[ExecutionContext], any())
-      ) thenAnswer new Answer[Cursor[T]] {
-        def answer(i: InvocationOnMock) = cursor
-      }
-
-      when(
-        cursor.collect[Traversable](anyInt, anyBoolean)(any[CanBuildFrom[Traversable[_], T, Traversable[T]]], any[ExecutionContext])
-      ) thenReturn Future.successful(returns)
+    def setupFind[T](filter: JsObject, returns: Traversable[T])(implicit manifest: Manifest[T]) = {
+      setupCursorWithCollect(returns, Some(filter))
     }
 
     def setupFind[T](returns: Option[T])(implicit manifest: Manifest[T]) = {
+      setupOne(returns)
+    }
 
-      val queryBuilder = mock[JSONQueryBuilder]
+    def setupFind[T](filter: JsObject, returns: Option[T])(implicit manifest: Manifest[T]) = {
 
-      when(
-        collection.find(any[JsObject])(any())
-      ) thenReturn queryBuilder
+      val queryBuilder = setupQueryBuilder(Some(filter))
 
       when(
         queryBuilder.one[T](any(), any)
@@ -50,39 +39,42 @@ trait MongoMockFinds extends MockitoSugar {
 
     }
 
-    def setupFind[T](filter: Any, returns: Option[T])(implicit manifest: Manifest[T]) = {
+    private def setupQueryBuilder[T](filter: Option[JsObject] = None) = {
 
       val queryBuilder = mock[JSONQueryBuilder]
+      val f = if (filter.isEmpty) any() else eqTo(filter.get)
 
       when(
-        collection.find(eqTo(filter))(any())
+        collection.find(f)(any())
       ) thenReturn queryBuilder
 
-      when(
-        queryBuilder.one[T](any(), any)
-      ) thenReturn Future.successful(returns)
-
+      queryBuilder
     }
 
-    def setupFind[T](filter: Any, returns: Traversable[T])(implicit manifest: Manifest[T]) = {
+    private def setupCursorWithCollect[T](l: Traversable[T], filter: Option[JsObject] = None, queryBuilder: Option[JSONQueryBuilder] = None)(implicit manifest: Manifest[T]): Unit = {
 
-      val queryBuilder = mock[JSONQueryBuilder]
+      val qb = if(queryBuilder.isEmpty) setupQueryBuilder(filter) else queryBuilder.get
       val cursor = mock[Cursor[T]]
 
       when(
-        collection.find(eqTo(filter))(any())
-      ) thenReturn queryBuilder
-
-      when(
-        queryBuilder.cursor[T](any(), any())(any(), any(), any())
+        qb.cursor[T](any(), any())(any(), any(), any())
       ) thenAnswer new Answer[Cursor[T]] {
         def answer(i: InvocationOnMock) = cursor
       }
 
       when(
         cursor.collect[Traversable](anyInt, anyBoolean)(any[CanBuildFrom[Traversable[_], T, Traversable[T]]], any[ExecutionContext])
-      ) thenReturn Future.successful(returns)
-
+      ) thenReturn Future.successful(l)
     }
+
+    private def setupOne[T](returns: Option[T] = None, filter: Option[JsObject] = None, queryBuilder: Option[JSONQueryBuilder] = None)(implicit manifest: Manifest[T]): Unit = {
+
+      val qb = if(queryBuilder.isEmpty) setupQueryBuilder(filter) else queryBuilder.get
+
+      when(
+        qb.one[T](any(), any)
+      ) thenReturn Future.successful(returns)
+    }
+
   }
 }
