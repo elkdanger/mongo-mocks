@@ -27,8 +27,8 @@ trait MongoMockCollections extends MockitoSugar with MongoMockInserts with Mongo
     when(mockIndexManager.ensure(any())).thenReturn(Future.successful(true))
     when(collection.indexesManager).thenReturn(mockIndexManager)
 
-    setupAnyUpdateOn(collection)
-    setupAnyInsertOn(collection)
+    collection.setupAnyInsert()
+    collection.setupAnyUpdate()
 
     collection
   }
