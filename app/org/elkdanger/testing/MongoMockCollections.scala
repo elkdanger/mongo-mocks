@@ -9,7 +9,7 @@ import reactivemongo.play.json.collection.JSONCollection
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait MongoMockCollections extends MockitoSugar with MongoMockUpdates {
+trait MongoMockCollections extends MockitoSugar {
 
   def mockCollection(name: Option[String] = None)(implicit db: DefaultDB, ec: ExecutionContext): JSONCollection = {
 

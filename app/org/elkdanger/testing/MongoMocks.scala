@@ -15,7 +15,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait MongoMocks extends MockitoSugar
   with MongoMockFinds
-  with MongoMockUpdates
   with MongoMockCollections {
 
   implicit val mockMongoApi = mock[ReactiveMongoApi]
@@ -80,6 +79,46 @@ trait MongoMocks extends MockitoSugar
 
     def verifyInsertWith[T](captor: ArgumentCaptor[T]) = {
       verify(collection).insert(captor.capture(), any[WriteConcern])(any(), any[ExecutionContext])
+    }
+
+    def verifyUpdate[T](filter: (JsObject) => Unit = null, update: (JsObject) => Unit = null) = {
+      val filterCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+      val updaterCaptor = ArgumentCaptor.forClass(classOf[JsObject])
+
+      verify(collection).update(filterCaptor.capture(), updaterCaptor.capture(), any[WriteConcern], anyBoolean(), anyBoolean())(any(), any(), any[ExecutionContext])
+
+      if (filter != null)
+        filter(filterCaptor.getValue)
+
+      if (update != null)
+        update(updaterCaptor.getValue)
+    }
+
+    def verifyAnyUpdate[T] = {
+      verify(collection).update(any(), any(), any[WriteConcern], anyBoolean(), anyBoolean())(any(), any(), any[ExecutionContext])
+    }
+
+    def setupUpdate[S, T](selector: S, obj: T, fails: Boolean = false) = {
+      val m = mockUpdateWriteResult(fails)
+
+      when(
+        collection.update(eqTo(selector), eqTo(obj), any(), anyBoolean, anyBoolean)(any(), any(), any[ExecutionContext])
+      ) thenReturn Future.successful(m)
+
+      this
+    }
+
+    def setupAnyUpdate(fails: Boolean = false) = {
+      val m = mockUpdateWriteResult(fails)
+      when(
+        collection.update(any(), any(), any(), anyBoolean, anyBoolean)(any(), any(), any[ExecutionContext])
+      ) thenReturn Future.successful(m)
+    }
+
+    private def mockUpdateWriteResult(fails: Boolean = false) = {
+      val m = mock[UpdateWriteResult]
+      when(m.ok).thenReturn(!fails)
+      m
     }
 
     private def mockWriteResult(fails: Boolean = false) = {
