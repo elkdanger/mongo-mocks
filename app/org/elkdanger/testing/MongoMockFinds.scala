@@ -13,6 +13,8 @@ import scala.collection.generic.CanBuildFrom
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.Manifest
 
+
+
 trait MongoMockFinds extends MockitoSugar {
 
   implicit class FindSetups(collection: JSONCollection) {
@@ -30,13 +32,7 @@ trait MongoMockFinds extends MockitoSugar {
     }
 
     def setupFind[T](filter: JsObject, returns: Option[T])(implicit manifest: Manifest[T]) = {
-
-      val queryBuilder = setupQueryBuilder(Some(filter))
-
-      when(
-        queryBuilder.one[T](any(), any)
-      ) thenReturn Future.successful(returns)
-
+      setupOne(returns, Some(filter))
     }
 
     private def setupQueryBuilder[T](filter: Option[JsObject] = None) = {
