@@ -1,3 +1,4 @@
+import org.mockito.ArgumentCaptor
 import play.api.libs.json.Json
 import play.modules.reactivemongo.json._
 import reactivemongo.play.json.collection.JSONCollection
@@ -121,5 +122,44 @@ class ApiSpec extends SpecBase {
 
       result should be (list)
     }
+  }
+
+  describe("The insert methods") {
+
+    it ("should setup and verify an insert method") {
+      val obj = mock[TestObject]
+      val collection = MockCollection()
+
+      collection <~ obj
+
+      collection.insert(obj)
+
+      collection verifyInsertWith obj
+    }
+
+    it ("should setup and verify inserts with an ArgumentCaptor") {
+      val obj = mock[TestObject]
+      val collection = MockCollection()
+
+      collection <~ obj
+
+      collection.insert(obj)
+
+      val captor = ArgumentCaptor.forClass(classOf[TestObject])
+      collection verifyInsertWith captor
+
+      captor.getValue should be(obj)
+    }
+
+    it ("should setup and verify any insert") {
+      val collection = MockCollection()
+
+      collection.setupAnyInsert()
+
+      collection.insert(mock[TestObject])
+
+      collection.verifyAnyInsert
+    }
+
   }
 }

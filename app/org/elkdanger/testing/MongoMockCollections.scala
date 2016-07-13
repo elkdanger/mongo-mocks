@@ -9,9 +9,10 @@ import reactivemongo.play.json.collection.JSONCollection
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait MongoMockCollections extends MockitoSugar with MongoMockInserts with MongoMockUpdates {
+trait MongoMockCollections extends MockitoSugar with MongoMockUpdates {
 
   def mockCollection(name: Option[String] = None)(implicit db: DefaultDB, ec: ExecutionContext): JSONCollection = {
+
     val collection = mock[JSONCollection]
 
     val matcher = name match {
@@ -19,16 +20,12 @@ trait MongoMockCollections extends MockitoSugar with MongoMockInserts with Mongo
       case _ => any()
     }
 
-    when(db.collection(matcher, any[FailoverStrategy])
-    (any[CollectionProducer[JSONCollection]]()))
+    when(db.collection(matcher, any[FailoverStrategy])(any[CollectionProducer[JSONCollection]]()))
       .thenReturn(collection)
 
     val mockIndexManager = mock[CollectionIndexesManager]
     when(mockIndexManager.ensure(any())).thenReturn(Future.successful(true))
     when(collection.indexesManager).thenReturn(mockIndexManager)
-
-    collection.setupAnyInsert()
-    collection.setupAnyUpdate()
 
     collection
   }
