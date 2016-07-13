@@ -1,4 +1,5 @@
-import play.api.libs.json.Json
+import org.mockito.ArgumentCaptor
+import play.api.libs.json.{JsString, Json}
 import play.modules.reactivemongo.json._
 import reactivemongo.play.json.collection.JSONCollection
 
@@ -121,5 +122,71 @@ class ApiSpec extends SpecBase {
 
       result should be (list)
     }
+  }
+
+  describe("The insert methods") {
+
+    it ("should setup and verify an insert method") {
+      val obj = mock[TestObject]
+      val collection = MockCollection()
+
+      collection <~ obj
+
+      await(collection.insert(obj))
+
+      collection verifyInsertWith obj
+    }
+
+    it ("should setup and verify inserts with an ArgumentCaptor") {
+      val obj = mock[TestObject]
+      val collection = MockCollection()
+
+      collection <~ obj
+
+      await(collection.insert(obj))
+
+      val captor = ArgumentCaptor.forClass(classOf[TestObject])
+      collection verifyInsertWith captor
+
+      captor.getValue should be(obj)
+    }
+
+    it ("should setup and verify any insert") {
+      val collection = MockCollection()
+
+      collection.setupAnyInsert()
+
+      await(collection.insert(mock[TestObject]))
+
+      collection.verifyAnyInsert
+    }
+  }
+
+  describe("The update methods") {
+
+    it ("should setup and verify the any update method") {
+      val collection = MockCollection()
+
+      collection.setupAnyUpdate()
+
+      await(collection.update(Json.obj("id" -> 1), mock[TestObject]))
+
+      collection.verifyAnyUpdate
+    }
+
+    it ("should setup and verify the update method with an object") {
+
+      val obj = Json.obj("name" -> "John Doe")
+      val collection = MockCollection()
+
+      collection.setupUpdate(Json.obj("id" -> 2), obj)
+
+      await(collection.update(Json.obj("id" -> 2), obj))
+
+      collection.verifyUpdate(
+        filter = { _ should be(Json.obj("id" -> 2)) },
+        update = { _ should be(obj) })
+    }
+
   }
 }
