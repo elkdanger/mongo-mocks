@@ -1,9 +1,10 @@
 import play.api.libs.json.Json
 import play.modules.reactivemongo.json._
+import reactivemongo.play.json.collection.JSONCollection
 
 class ApiSpec extends SpecBase {
 
-  case class TestObject(id: String)
+  case class TestObject(id: Int)
 
   object TestObject {
     implicit val formats = Json.format[TestObject]
@@ -64,9 +65,61 @@ class ApiSpec extends SpecBase {
 
         result should be(list)
       }
-
     }
-
   }
 
+  describe("The mock fluent API") {
+
+    it ("should create a mock collection") {
+      val collection: JSONCollection = MockCollection()
+
+      collection should not be Nil
+    }
+
+    it ("should create a mock for any object") {
+      val obj = mock[TestObject]
+      val collection = MockCollection()
+
+      collection ~> Some(obj)
+
+      val result = await(collection.find(Json.obj()).one[TestObject])
+
+      result.isDefined should be(true)
+      result.get should be(obj)
+    }
+
+    it ("should create a mock for a list of objects") {
+      val list = List(mock[TestObject], mock[TestObject])
+      val collection = MockCollection()
+
+      collection ~> list
+
+      val result = await(collection.find(Json.obj()).cursor[TestObject]().collect[List]())
+
+      result should be(list)
+    }
+
+    it ("should mock a find for an object, with a filter") {
+      val obj = mock[TestObject]
+      val collection = MockCollection()
+
+      collection ? ("id" -> 4) ~> Some(obj)
+
+      val result = await(collection.find(Json.obj("id" -> 4)).one[TestObject])
+
+      result.isDefined should be(true)
+      result.get should be(obj)
+    }
+
+    it ("should mock a find for a list, with a filter") {
+      val list = List(mock[TestObject], mock[TestObject])
+      val collection = MockCollection()
+
+      collection ? ("someProp" -> true) ~> list
+
+      val result = await(collection.find(Json.obj("someProp" -> true)).cursor[TestObject]().collect[List]())
+
+      result should be (list)
+    }
+  }
 }
