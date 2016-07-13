@@ -60,7 +60,7 @@ trait MongoMocks extends MockitoSugar
 
     def verifyInsertWith[T](captor: ArgumentCaptor[T]) = collection.verifyInsertWith(captor)
 
-    def verifyUpdate[T](filter: (JsObject) => Unit = null, update: (JsObject) => Unit = null) = collection.verifyUpdate(filter, update)
+    def verifyUpdate[T](selectorFunc: (JsObject) => Unit = null, updateFunc: (JsObject) => Unit = null) = collection.verifyUpdate(selectorFunc, updateFunc)
 
     def verifyAnyUpdate[T] = collection.verifyAnyUpdate
 

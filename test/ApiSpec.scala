@@ -176,16 +176,17 @@ class ApiSpec extends SpecBase {
 
     it ("should setup and verify the update method with an object") {
 
+      val selector = Json.obj("id" -> 2)
       val obj = Json.obj("name" -> "John Doe")
       val collection = MockCollection()
 
-      collection.setupUpdate(Json.obj("id" -> 2), obj)
+      collection.setupUpdate(selector, obj)
 
-      await(collection.update(Json.obj("id" -> 2), obj))
+      await(collection.update(selector, obj))
 
       collection.verifyUpdate(
-        filter = { _ should be(Json.obj("id" -> 2)) },
-        update = { _ should be(obj) })
+        selectorFunc = { _ should be(selector) },
+        updateFunc = { _ should be(obj) })
     }
 
   }

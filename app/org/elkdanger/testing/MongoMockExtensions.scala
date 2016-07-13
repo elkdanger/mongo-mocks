@@ -112,17 +112,17 @@ trait MongoMockExtensions extends MockitoSugar {
 
   implicit class UpdateSetups(collection: JSONCollection) {
 
-    def verifyUpdate[T](filter: (JsObject) => Unit = null, update: (JsObject) => Unit = null) = {
+    def verifyUpdate[T](selectorFunc: (JsObject) => Unit = null, objectFunc: (JsObject) => Unit = null) = {
       val filterCaptor = ArgumentCaptor.forClass(classOf[JsObject])
       val updaterCaptor = ArgumentCaptor.forClass(classOf[JsObject])
 
       verify(collection).update(filterCaptor.capture(), updaterCaptor.capture(), any[WriteConcern], anyBoolean(), anyBoolean())(any(), any(), any[ExecutionContext])
 
-      if (filter != null)
-        filter(filterCaptor.getValue)
+      if (selectorFunc != null)
+        selectorFunc(filterCaptor.getValue)
 
-      if (update != null)
-        update(updaterCaptor.getValue)
+      if (objectFunc != null)
+        objectFunc(updaterCaptor.getValue)
     }
 
     def verifyAnyUpdate[T] = {
