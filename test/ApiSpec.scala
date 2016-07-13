@@ -1,5 +1,5 @@
 import org.mockito.ArgumentCaptor
-import play.api.libs.json.{JsString, Json}
+import play.api.libs.json.Json
 import play.modules.reactivemongo.json._
 import reactivemongo.play.json.collection.JSONCollection
 
