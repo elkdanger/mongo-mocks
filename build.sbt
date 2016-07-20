@@ -1,6 +1,6 @@
 name := "mongo-mocks"
 
-version := "0.0.6-SNAPSHOT"
+version := "0.0.7"
 
 organization := "org.elkdanger"
 
@@ -13,3 +13,9 @@ libraryDependencies ++= Seq(
 )
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
+
+publishMavenStyle := false
+
+licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
+
+bintrayPackageLabels := Seq("testing", "mongo", "mock", "mockito", "play", "playframework")
