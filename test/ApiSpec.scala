@@ -1,6 +1,7 @@
 import org.mockito.ArgumentCaptor
 import play.api.libs.json.Json
 import play.modules.reactivemongo.json._
+import reactivemongo.api.{CollectionProducer, FailoverStrategy}
 import reactivemongo.play.json.collection.JSONCollection
 
 class ApiSpec extends SpecBase {
@@ -16,13 +17,26 @@ class ApiSpec extends SpecBase {
   describe("The mock collection api") {
 
     it ("should be able to create a mock collection") {
-      val collection = mockCollection()
+      val collection = MockCollection()
       collection should not be Nil
+    }
+
+    it ("should be able to create a mock collection with a specific name") {
+      val collection = MockCollection(Some("users"))
+      collection should not be Nil
+      collection ~> Some(1)
+
+      intercept[NullPointerException] {
+        val c = mockMongoDb.collection[JSONCollection]("random_collection")
+        val result = await(c.find(Json.obj()).one[Int])
+
+        result.get should be(1)
+      }
     }
 
     describe ("the find methods") {
 
-      val collection = mockCollection()
+      val collection = MockCollection()
 
       it ("should be able to mock a find for any object") {
 

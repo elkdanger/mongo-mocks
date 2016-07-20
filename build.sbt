@@ -6,6 +6,12 @@ organization := "org.elkdanger"
 
 scalaVersion := "2.11.8"
 
+licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
+
+bintrayPackageLabels := Seq("testing", "mongo", "mock", "mockito", "play", "playframework")
+
+publishMavenStyle := false
+
 libraryDependencies ++= Seq(
   "org.reactivemongo" %% "play2-reactivemongo" % "0.11.13",
   "org.scalatest" %% "scalatest" % "2.2.6",
@@ -14,8 +20,6 @@ libraryDependencies ++= Seq(
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-publishMavenStyle := false
-
-licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
-
-bintrayPackageLabels := Seq("testing", "mongo", "mock", "mockito", "play", "playframework")
+// Coverage
+coverageMinimum := 80
+coverageFailOnMinimum := true
