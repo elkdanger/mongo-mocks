@@ -1,4 +1,8 @@
 # mongo-mocks
+
+[![Build Status](https://travis-ci.org/elkdanger/mongo-mocks.svg?branch=master)](https://travis-ci.org/elkdanger/mongo-mocks)
+[ ![Download](https://api.bintray.com/packages/elkdanger/maven/mongo-mocks/images/download.svg) ](https://bintray.com/elkdanger/maven/mongo-mocks/_latestVersion)
+
 A mocking helper library for Mockito + PlayReactiveMongo. It helps you create basic mocks for:
 
 * Find operations, using either a collection or a single object
