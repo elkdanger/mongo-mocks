@@ -9,6 +9,34 @@ A mocking helper library for Mockito + PlayReactiveMongo. It helps you create ba
 * Insert operations
 * Update operations
 
+## Installation
+
+Add a new resolver to your `build.sbt` file:
+
+```scala
+resolvers += Resolver.url("Elkdanger on Bintray",
+    url("https://dl.bintray.com/elkdanger/maven"))
+    (Resolver.ivyStylePatterns)
+```
+
+Then add the package as a dependency:
+
+```scala
+libraryDependencies += "org.elkdanger" %% "mongo-mocks" % "0.0.8"
+```
+
+To make use of the methods described below, mix in the `MongoMocks` trait into your spec class:
+
+```scala
+import org.elkdanger.testing.MongoMocks
+
+class MySpec extends MongoMocks {
+
+}
+```
+
+## Overview
+
 Setups are performed on `JSONCollection` objects that have been mocked, either through `mock[JSONCollection]` or by using the helper `MockCollection()`.
 
 All of the setup methods below can also be used either on `mock[JSONCollection]` or `MockCollectionBuilder` (as returned by `MockCollection()`). `MockCollectionBuilder` can also be implicitly converted to `JSONCollection` to make passing it around a lot easier.
