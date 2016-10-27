@@ -77,6 +77,17 @@ trait MongoMocks extends MockitoSugar
 
     def setupAnyUpdate(fails: Boolean = false) = collection.setupAnyUpdate(fails)
 
+    def setupRemove[S](selector: S, fails: Boolean = false) = collection.setupRemove(selector, fails)
+
+    def setupAnyRemove(fails: Boolean = false) = collection.setupAnyRemove(fails)
+
+    def verifyRemove[S](selector: S) = collection.verifyRemove(selector)
+
+    def verifyRemove[T](captor: ArgumentCaptor[T]) = collection.verifyRemove(captor)
+
+    def verifyAnyRemove = collection.verifyAnyRemove
+
+
     /*
      * Implicit conversion between a sequence of tuples to a JsObject
      */

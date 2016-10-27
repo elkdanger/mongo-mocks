@@ -154,4 +154,34 @@ trait MongoMockExtensions extends MockitoSugar {
 
   }
 
+  implicit class RemoveSetups(collection: JSONCollection) {
+    def setupRemove[S](selector: S, fails: Boolean = false) = {
+      val m = mockWriteResult(fails)
+      when(collection.remove(eqTo(selector), any(), any())(any(), any())) thenReturn Future.successful(m)
+    }
+
+    def setupAnyRemove(fails: Boolean = false) = {
+      val m = mockWriteResult(fails)
+      when(collection.remove(any(), any(), any())(any(), any())) thenReturn Future.successful(m)
+    }
+
+    def verifyRemove[S](selector: S) = {
+      verify(collection).remove(eqTo(selector), any(), any())(any(), any())
+    }
+
+    def verifyRemove[T](captor: ArgumentCaptor[T]) = {
+      verify(collection).remove(captor.capture(), any(), any())(any(), any())
+    }
+
+    def verifyAnyRemove = {
+      verify(collection).remove(any(), any[WriteConcern], any())(any(), any())
+    }
+
+    private def mockWriteResult(fails: Boolean) = {
+      val m = mock[WriteResult]
+      when(m.ok) thenReturn !fails
+      m
+    }
+  }
+
 }
