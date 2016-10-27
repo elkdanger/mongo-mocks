@@ -1,5 +1,5 @@
 import org.mockito.ArgumentCaptor
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.modules.reactivemongo.json._
 import reactivemongo.api.{CollectionProducer, FailoverStrategy}
 import reactivemongo.play.json.collection.JSONCollection
@@ -16,12 +16,12 @@ class ApiSpec extends SpecBase {
 
   describe("The mock collection api") {
 
-    it ("should be able to create a mock collection") {
+    it("should be able to create a mock collection") {
       val collection = MockCollection()
       collection should not be Nil
     }
 
-    it ("should be able to create a mock collection with a specific name") {
+    it("should be able to create a mock collection with a specific name") {
       val collection = MockCollection(Some("users"))
       collection should not be Nil
       collection ~> Some(1)
@@ -34,11 +34,11 @@ class ApiSpec extends SpecBase {
       }
     }
 
-    describe ("the find methods") {
+    describe("the find methods") {
 
       val collection = MockCollection()
 
-      it ("should be able to mock a find for any object") {
+      it("should be able to mock a find for any object") {
 
         val obj = mock[TestObject]
 
@@ -49,7 +49,7 @@ class ApiSpec extends SpecBase {
         result should be(Some(obj))
       }
 
-      it ("should be able to mock a find for a list of objects") {
+      it("should be able to mock a find for a list of objects") {
 
         val list = List(mock[TestObject], mock[TestObject])
 
@@ -60,7 +60,7 @@ class ApiSpec extends SpecBase {
         result should be(list)
       }
 
-      it ("should be able to mock a find for an object, with a filter") {
+      it("should be able to mock a find for an object, with a filter") {
 
         val obj = mock[TestObject]
 
@@ -70,8 +70,8 @@ class ApiSpec extends SpecBase {
 
         result should be(Some(obj))
       }
-      
-      it ("should be able to mock a find for a list, with a filter") {
+
+      it("should be able to mock a find for a list, with a filter") {
         val list = List(mock[TestObject], mock[TestObject])
 
         collection.setupFind(Json.obj("someProp" -> 12), list)
@@ -85,13 +85,13 @@ class ApiSpec extends SpecBase {
 
   describe("The mock fluent API") {
 
-    it ("should create a mock collection") {
+    it("should create a mock collection") {
       val collection: JSONCollection = MockCollection()
 
       collection should not be Nil
     }
 
-    it ("should create a mock for any object") {
+    it("should create a mock for any object") {
       val obj = mock[TestObject]
       val collection = MockCollection()
 
@@ -103,7 +103,7 @@ class ApiSpec extends SpecBase {
       result.get should be(obj)
     }
 
-    it ("should create a mock for a list of objects") {
+    it("should create a mock for a list of objects") {
       val list = List(mock[TestObject], mock[TestObject])
       val collection = MockCollection()
 
@@ -114,7 +114,7 @@ class ApiSpec extends SpecBase {
       result should be(list)
     }
 
-    it ("should mock a find for an object, with a filter") {
+    it("should mock a find for an object, with a filter") {
       val obj = mock[TestObject]
       val collection = MockCollection()
 
@@ -126,7 +126,7 @@ class ApiSpec extends SpecBase {
       result.get should be(obj)
     }
 
-    it ("should mock a find for a list, with a filter") {
+    it("should mock a find for a list, with a filter") {
       val list = List(mock[TestObject], mock[TestObject])
       val collection = MockCollection()
 
@@ -134,13 +134,13 @@ class ApiSpec extends SpecBase {
 
       val result = await(collection.find(Json.obj("someProp" -> true)).cursor[TestObject]().collect[List]())
 
-      result should be (list)
+      result should be(list)
     }
   }
 
   describe("The insert methods") {
 
-    it ("should setup and verify an insert method") {
+    it("should setup and verify an insert method") {
       val obj = mock[TestObject]
       val collection = MockCollection()
 
@@ -151,7 +151,7 @@ class ApiSpec extends SpecBase {
       collection verifyInsertWith obj
     }
 
-    it ("should setup and verify inserts with an ArgumentCaptor") {
+    it("should setup and verify inserts with an ArgumentCaptor") {
       val obj = mock[TestObject]
       val collection = MockCollection()
 
@@ -165,7 +165,7 @@ class ApiSpec extends SpecBase {
       captor.getValue should be(obj)
     }
 
-    it ("should setup and verify any insert") {
+    it("should setup and verify any insert") {
       val collection = MockCollection()
 
       collection.setupAnyInsert()
@@ -178,7 +178,7 @@ class ApiSpec extends SpecBase {
 
   describe("The update methods") {
 
-    it ("should setup and verify the any update method") {
+    it("should setup and verify the any update method") {
       val collection = MockCollection()
 
       collection.setupAnyUpdate()
@@ -188,7 +188,7 @@ class ApiSpec extends SpecBase {
       collection.verifyAnyUpdate
     }
 
-    it ("should setup and verify the update method with an object") {
+    it("should setup and verify the update method with an object") {
 
       val selector = Json.obj("id" -> 2)
       val obj = Json.obj("name" -> "John Doe")
@@ -199,9 +199,49 @@ class ApiSpec extends SpecBase {
       await(collection.update(selector, obj))
 
       collection.verifyUpdate(
-        selectorFunc = { _ should be(selector) },
-        updateFunc = { _ should be(obj) })
+        selectorFunc = {
+          _ should be(selector)
+        },
+        updateFunc = {
+          _ should be(obj)
+        })
+    }
+  }
+
+  describe("The delete methods") {
+
+    it("should setup and verify the remove method with a selector") {
+      val selector = Json.obj("id" -> 10)
+      val collection = MockCollection()
+
+      collection.setupRemove(selector)
+
+      await(collection.remove(selector))
+
+      collection.verifyRemove(selector)
     }
 
+    it("should setup and verify any remove operations") {
+      val collection = MockCollection()
+
+      collection.setupAnyRemove()
+
+      await(collection.remove(Json.obj("hello" -> "world")))
+
+      collection.verifyAnyRemove
+    }
+
+    it("should verify a remove with an argument captor") {
+      val collection = MockCollection()
+
+      collection.setupAnyRemove()
+
+      await(collection.remove(Json.obj("hello" -> "world")))
+
+      val captor = ArgumentCaptor.forClass(classOf[JsValue])
+      collection.verifyRemove(captor)
+
+      (captor.getValue \ "hello").as[String] shouldBe "world"
+    }
   }
 }
